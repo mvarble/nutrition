@@ -4,4 +4,4 @@ rust:
 cache: cargo
 script:
   - cargo build --verbose --workspace
-  - cargo test --verbose -- --include-ignored
+  - cargo test --verbose --workspace -- --include-ignored
