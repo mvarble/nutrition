@@ -2,6 +2,12 @@ language: rust
 rust:
   - stable
 cache: cargo
+services:
+  -postgresql
+before_script:
+  - psql -c "create database "$DATABASE_NAME"_testing;"
+  - cargo install diesel_cli
+  - diesel database --database-url $DATABASE_URL"_testing" reset
 script:
   - cargo build --verbose --workspace
   - cargo test --verbose --workspace -- --include-ignored
