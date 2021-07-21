@@ -57,7 +57,7 @@ fn parsedb() {
         .as_ref(),
     );
     assert_eq!(
-        food.measurements.get(13),
+        food.measurements.get(14),
         Some(api::Measurement {
             measurement_type: api::MeasurementType::Nominal,
             name: "slice".to_string(),
