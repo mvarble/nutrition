@@ -40,7 +40,6 @@ pub struct NutritionixMeasure {
 pub struct NutritionixService {
     pub app_id: String,
     pub app_key: String,
-    pub client: Client,
 }
 
 impl NutritionixService {
@@ -48,15 +47,17 @@ impl NutritionixService {
         NutritionixService {
             app_id: app_id.into(),
             app_key: app_key.into(),
-            client: Client::default(),
         }
     }
 
     /// Request a Nutritionix payload via the `/v2/natural/nutrients` endpoint
-    pub async fn request_natural(&self, query: &str) -> Result<Vec<NutritionixFood>> {
+    pub async fn request_natural(
+        &self,
+        client: &Client,
+        query: &str,
+    ) -> Result<Vec<NutritionixFood>> {
         let body = serde_json::json!({ "query": query });
-        let mut res = self
-            .client
+        let mut res = client
             .post("https://trackapi.nutritionix.com/v2/natural/nutrients")
             .header("x-app-id", self.app_id.clone())
             .header("x-app-key", self.app_key.clone())
@@ -68,14 +69,13 @@ impl NutritionixService {
     }
 
     /// Request a Nutritionix payload via the `/v2/search/item` endpoint
-    pub async fn request_upc(&self, upc: &str) -> Result<Vec<NutritionixFood>> {
+    pub async fn request_upc(&self, client: &Client, upc: &str) -> Result<Vec<NutritionixFood>> {
         let url = "https://trackapi.nutritionix.com/v2/search/item";
         let url = format!(
             "{}?x-app-id={}&x-app-key={}&upc={}",
             url, self.app_id, self.app_key, upc
         );
-        let mut res = self
-            .client
+        let mut res = client
             .get(url)
             .send()
             .await?
@@ -91,6 +91,8 @@ impl NutritionixService {
 
 #[cfg(test)]
 mod test {
+    use actix_web::client::Client;
+
     use crate::env;
     use crate::nutritionix::NutritionixService;
 
@@ -106,7 +108,10 @@ mod test {
     #[ignore]
     async fn request_natural() {
         let nixservice = get_service();
-        let res = nixservice.request_natural("1 egg, 1 cup of spinach").await;
+        let client = Client::default();
+        let res = nixservice
+            .request_natural(&client, "1 egg, 1 cup of spinach")
+            .await;
         if let Err(e) = res {
             panic!(
                 "A natural request `1 egg, 1 cup of spinach` did not work!\n{:#?}",
@@ -135,7 +140,8 @@ mod test {
     #[ignore]
     async fn request_upc() {
         let nixservice = get_service();
-        let res = nixservice.request_upc("024463061071").await;
+        let client = Client::default();
+        let res = nixservice.request_upc(&client, "024463061071").await;
         if let Err(e) = res {
             panic!("A upc request `024463061071` did not work!\n{:#?}", e);
         }

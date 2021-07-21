@@ -7,8 +7,8 @@ use uom::si::{
     mass::{gram, kilogram, milligram},
     mass_density::kilogram_per_cubic_meter,
     volume::{
-        cup, fluid_ounce, gallon, liter, milliliter, pint_liquid, quart_liquid, tablespoon,
-        teaspoon, Unit,
+        centiliter, cubic_inch, cup, fluid_ounce, gallon, liter, milliliter, pint_liquid,
+        quart_liquid, tablespoon, teaspoon, Unit,
     },
 };
 
@@ -96,7 +96,9 @@ pub fn parsedb(food: pg::Food, nominals: Vec<pg::Serving>) -> Food {
     if let Some(g2l) = food.g2l_density {
         let md = MassDensity::new::<kilogram_per_cubic_meter>(g2l);
         measurements.push(from_volume::<milliliter>(md));
+        measurements.push(from_volume::<centiliter>(md));
         measurements.push(from_volume::<liter>(md));
+        measurements.push(from_volume::<cubic_inch>(md));
         measurements.push(from_volume::<cup>(md));
         measurements.push(from_volume::<pint_liquid>(md));
         measurements.push(from_volume::<quart_liquid>(md));

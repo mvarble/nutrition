@@ -53,8 +53,8 @@ use uom::si::{
     f32::{Mass, MassDensity, Volume},
     mass::gram,
     volume::{
-        cup, fluid_ounce, gallon, liter, milliliter, pint_liquid, quart_liquid, tablespoon,
-        teaspoon,
+        cubic_inch, cup, fluid_ounce, gallon, liter, milliliter, pint_liquid, quart_liquid,
+        tablespoon, teaspoon,
     },
 };
 
@@ -103,6 +103,8 @@ impl From<NutritionixMeasure> for MeasurementType {
             MeasurementType::MassDensity(Mass::new::<gram>(mass) / Volume::new::<tablespoon>(qty))
         } else if name == "teaspoon" || name == "tsp" {
             MeasurementType::MassDensity(Mass::new::<gram>(mass) / Volume::new::<teaspoon>(qty))
+        } else if name == "cubic inch" {
+            MeasurementType::MassDensity(Mass::new::<gram>(mass) / Volume::new::<cubic_inch>(qty))
         } else if name == "fl oz" {
             MeasurementType::MassDensity(Mass::new::<gram>(mass) / Volume::new::<fluid_ounce>(qty))
         } else if qty > 1.0 {

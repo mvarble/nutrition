@@ -15,4 +15,5 @@ pub mod db;
 pub mod env;
 pub mod nutritionix;
 pub mod schema;
+pub mod service;
 pub mod si;
