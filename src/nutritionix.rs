@@ -1,6 +1,6 @@
 //! Interact with the [Nutritionix](https://trackapi.nutritionix.com/docs/) API.
 
-use anyhow::Result;
+use actix_web::{client::Client, error::Result};
 
 /// The Nutritionix API returns a JSON payload of the form `{ foods: [...] }`, consisting of an array of
 /// json values like `NutritionixFood`.
@@ -36,11 +36,11 @@ pub struct NutritionixMeasure {
 }
 
 /// This struct implements methods which make requests to the Nutritionix API.
-#[derive(Debug)]
+#[derive(Clone)]
 pub struct NutritionixService {
     pub app_id: String,
     pub app_key: String,
-    pub client: reqwest::Client,
+    pub client: Client,
 }
 
 impl NutritionixService {
@@ -48,7 +48,7 @@ impl NutritionixService {
         NutritionixService {
             app_id: app_id.into(),
             app_key: app_key.into(),
-            client: reqwest::Client::new(),
+            client: Client::default(),
         }
     }
 
@@ -58,10 +58,9 @@ impl NutritionixService {
         let mut res = self
             .client
             .post("https://trackapi.nutritionix.com/v2/natural/nutrients")
-            .json(&body)
-            .header("x-app-id", &self.app_id)
-            .header("x-app-key", &self.app_key)
-            .send()
+            .header("x-app-id", self.app_id.clone())
+            .header("x-app-key", self.app_key.clone())
+            .send_json(&body)
             .await?
             .json::<serde_json::Value>()
             .await?;
@@ -75,7 +74,13 @@ impl NutritionixService {
             "{}?x-app-id={}&x-app-key={}&upc={}",
             url, self.app_id, self.app_key, upc
         );
-        let mut res = reqwest::get(url).await?.json::<serde_json::Value>().await?;
+        let mut res = self
+            .client
+            .get(url)
+            .send()
+            .await?
+            .json::<serde_json::Value>()
+            .await?;
         let mut foods: Vec<NutritionixFood> = serde_json::from_value(res["foods"].take())?;
         foods
             .iter_mut()
@@ -97,13 +102,16 @@ mod test {
         )
     }
 
-    #[tokio::test]
+    #[actix_rt::test]
     #[ignore]
     async fn request_natural() {
         let nixservice = get_service();
         let res = nixservice.request_natural("1 egg, 1 cup of spinach").await;
-        if res.is_err() {
-            panic!("A natural request `1 egg, 1 cup of spinach` did not work!");
+        if let Err(e) = res {
+            panic!(
+                "A natural request `1 egg, 1 cup of spinach` did not work!\n{:#?}",
+                e
+            );
         }
         res.unwrap().iter().for_each(|food| {
             if food.food_name == "egg" {
@@ -119,18 +127,17 @@ mod test {
                 assert!(
                     food.alt_measures.is_some() && !food.alt_measures.as_ref().unwrap().is_empty()
                 );
-            } else {
             }
         })
     }
 
-    #[tokio::test]
+    #[actix_rt::test]
     #[ignore]
     async fn request_upc() {
         let nixservice = get_service();
         let res = nixservice.request_upc("024463061071").await;
-        if res.is_err() {
-            panic!("A upc request `024463061071` did not work!");
+        if let Err(e) = res {
+            panic!("A upc request `024463061071` did not work!\n{:#?}", e);
         }
         let res = res.unwrap();
         let item = res.get(0);
