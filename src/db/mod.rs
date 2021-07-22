@@ -97,11 +97,13 @@ impl DB {
         let foods = inserted_foods
             .into_iter()
             .map(|food| {
-                inserted_servings_grouped
-                    .remove_entry(&food.id)
-                    .map(|(_, servings)| api::parsedb(food, servings))
+                let opt_servings = inserted_servings_grouped.remove_entry(&food.id);
+                if let Some((_, servings)) = opt_servings {
+                    api::parsedb(food, servings)
+                } else {
+                    api::parsedb(food, Vec::new())
+                }
             })
-            .flatten()
             .collect::<Vec<api::Food>>();
         Ok(foods)
     }

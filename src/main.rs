@@ -26,7 +26,8 @@ use service::ServiceError;
 #[actix_web::main]
 async fn main() -> Result<()> {
     let env = env::get().map_err(ServiceError::from)?;
-    let db = DB::new(env.database_url).map_err(ServiceError::from)?;
+    let dbpath = format!("{}/{}", env.database_url, env.database_name);
+    let db = DB::new(dbpath).map_err(ServiceError::from)?;
     let nixservice = NutritionixService::new(env.nutritionix_app_id, env.nutritionix_app_key);
     HttpServer::new(move || {
         App::new()

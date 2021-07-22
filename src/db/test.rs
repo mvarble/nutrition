@@ -69,7 +69,10 @@ fn parsedb() {
 
 fn establish_test_db() -> Result<DB> {
     let env = env::get()?;
-    let manager = ConnectionManager::<PgConnection>::new(format!("{}_testing", env.database_url));
+    let manager = ConnectionManager::<PgConnection>::new(format!(
+        "{}/{}_testing",
+        env.database_url, env.database_name
+    ));
     let builder = diesel::r2d2::Pool::builder().max_size(1);
     let pool = builder.build(manager)?;
     let db = DB { pool };

@@ -6,8 +6,8 @@ services:
   -postgresql
 before_script:
   - psql -c "create database "$DATABASE_NAME"_testing;"
-  - cargo install diesel_cli
-  - diesel database --database-url $DATABASE_URL"_testing" reset
+  - cargo install diesel_cli --no-default-features --features "postgres"
+  - diesel database --database-url $DATABASE_URL"/"$DATABASE_NAME"_testing" reset
 script:
   - cargo build --verbose --workspace
   - cargo test --verbose --workspace -- --include-ignored
