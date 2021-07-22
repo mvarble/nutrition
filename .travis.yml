@@ -5,7 +5,8 @@ cache: cargo
 services:
   -postgresql
 before_script:
-  - psql -c "create database "$DATABASE_NAME"_testing;"
+  - psql -c "DROP DATABASE ${DATABASE_NAME}_testing;"
+  - psql -c "CREATE DATABASE ${DATABASE_NAME}_testing;"
   - cargo install diesel_cli --no-default-features --features "postgres"
   - diesel database --database-url $DATABASE_URL"/"$DATABASE_NAME"_testing" reset
 script:
