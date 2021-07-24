@@ -1,5 +1,6 @@
 use actix_web::{error, web};
 use derive_more::{Display, Error};
+use std::path::PathBuf;
 
 use crate::db::DB;
 use crate::nutritionix::NutritionixService;
@@ -21,10 +22,13 @@ impl error::ResponseError for ServiceError {}
 pub struct AppState {
     pub db: DB,
     pub nixservice: NutritionixService,
+    pub ui_dir: PathBuf,
 }
 
 mod rest;
+mod ui;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
-    cfg.service(web::scope("/api/v1").configure(rest::config));
+    cfg.service(web::scope("/api/v1").configure(rest::config))
+        .service(web::scope("").configure(ui::config));
 }

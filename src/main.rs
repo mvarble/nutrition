@@ -29,12 +29,14 @@ async fn main() -> Result<()> {
     let dbpath = format!("{}/{}", env.database_url, env.database_name);
     let db = DB::new(dbpath).map_err(ServiceError::from)?;
     let nixservice = NutritionixService::new(env.nutritionix_app_id, env.nutritionix_app_key);
+    let ui_dir = env.ui_dir;
     HttpServer::new(move || {
         App::new()
             .wrap(middleware::Logger::default())
             .data(service::AppState {
                 db: db.clone(),
                 nixservice: nixservice.clone(),
+                ui_dir: ui_dir.clone(),
             })
             .configure(service::config)
             .default_service(web::route().to(|| {

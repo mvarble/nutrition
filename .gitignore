@@ -1,3 +1,5 @@
 target
 .env
 *.swp
+assets/ui/dist
+assets/ui/node_modules
