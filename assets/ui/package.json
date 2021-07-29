@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "main": "index.js",
   "scripts": {
+    "develop": "./node_modules/webpack/bin/webpack.js --mode development",
     "build": "./node_modules/webpack/bin/webpack.js --mode production"
   },
   "author": "",
@@ -20,7 +21,11 @@
   },
   "dependencies": {
     "html-webpack-plugin": "^5.3.2",
+    "javascript-barcode-reader": "^0.6.9",
+    "lodash": "^4.17.21",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react-dom": "^17.0.2",
+    "rxjs": "^7.2.0",
+    "zustand": "^3.5.7"
   }
 }

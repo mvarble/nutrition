@@ -34,5 +34,9 @@ module.exports = (_, { mode }) => ({
       title: 'Nutrition API',
     }),
     new MiniCssExtractPlugin(),
-  ]
+  ],
+  watch: mode === 'development',
+  watchOptions: {
+    ignored: /node_modules/,
+  },
 });

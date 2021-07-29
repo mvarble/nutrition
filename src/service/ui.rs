@@ -11,7 +11,6 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 }
 
 async fn home(data: web::Data<AppState>) -> Result<NamedFile> {
-    println!("HI THERE");
     let path = data.ui_dir.join("index.html");
     serve_file(path).await
 }
@@ -28,6 +27,5 @@ async fn ui(req: HttpRequest, data: web::Data<AppState>) -> Result<NamedFile> {
 }
 
 async fn serve_file(path: PathBuf) -> Result<NamedFile> {
-    println!("{:#?}", path);
     Ok(NamedFile::open(path)?)
 }
