@@ -48,7 +48,7 @@ fn parsedb() {
         .as_ref(),
     );
     assert_eq!(
-        food.measurements.get(3),
+        food.measurements.get(5),
         Some(api::Measurement {
             measurement_type: api::MeasurementType::Volume,
             name: "milliliter".to_string(),
@@ -57,7 +57,7 @@ fn parsedb() {
         .as_ref(),
     );
     assert_eq!(
-        food.measurements.get(14),
+        food.measurements.get(16),
         Some(api::Measurement {
             measurement_type: api::MeasurementType::Nominal,
             name: "slice".to_string(),

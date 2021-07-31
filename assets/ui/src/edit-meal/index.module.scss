@@ -1,0 +1,55 @@
+.current {
+  display: block;
+}
+.before {
+  display: none;
+}
+.after {
+  display: none;
+}
+
+.fqItem {
+  padding: 1em;
+  & > :first-child {
+    display: flex;
+    width: 100%;
+    & > :first-child {
+      margin-right: 1em;
+    }
+    & > :last-child {
+      flex-grow: 1;
+      text-align: right;
+      font-style: italic;
+      & > :first-child {
+        margin-right: 0.5em;
+      }
+    }
+  }
+}
+
+.listInput {
+  position: relative;
+  z-index: 3;
+  & > input { 
+    z-index: 2; 
+    &:focus {
+      border-radius: 4px 4px 0 0;
+    }
+    &:focus + * {
+      visibility: inherit;
+    }
+  }
+  & > :last-child {
+    position: absolute;
+    top: calc(2.5em - 2px);
+    background: white;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    visibility: hidden;
+    transition: visibility 0.1s;
+    & > a {
+      padding: 1em;
+    }
+  }
+}

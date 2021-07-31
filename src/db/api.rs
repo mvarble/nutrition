@@ -3,8 +3,8 @@
 use itertools::Itertools;
 use std::collections::HashMap;
 use uom::si::{
-    f32::{MassDensity, Volume},
-    mass::{gram, kilogram, milligram},
+    f32::{Mass, MassDensity, Volume},
+    mass::{gram, kilogram, milligram, ounce, pound},
     mass_density::kilogram_per_cubic_meter,
     volume::{
         centiliter, cubic_inch, cup, fluid_ounce, gallon, liter, milliliter, pint_liquid,
@@ -91,6 +91,16 @@ pub fn parsedb(food: pg::Food, nominals: Vec<pg::Serving>) -> Food {
             measurement_type: MeasurementType::Mass,
             name: format!("{:?}", kilogram),
             mass: 1000.0,
+        },
+        Measurement {
+            measurement_type: MeasurementType::Mass,
+            name: format!("{:?}", pound),
+            mass: Mass::new::<pound>(1.0).get::<gram>(),
+        },
+        Measurement {
+            measurement_type: MeasurementType::Mass,
+            name: format!("{:?}", ounce),
+            mass: Mass::new::<ounce>(1.0).get::<gram>(),
         },
     ];
     if let Some(g2l) = food.g2l_density {

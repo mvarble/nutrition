@@ -1,13 +1,15 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = (_, { mode }) => ({
   mode,
+  target: 'web',
   entry: path.join(__dirname, "src", "index.js"),
   output: {
+    publicPath: '',
     path: path.join(__dirname, "dist"),
-    filename: "bundle.js",
+    filename: path.join("js", "bundle.js"),
   },
   module: {
     rules: [
@@ -22,8 +24,40 @@ module.exports = (_, { mode }) => ({
         },
       },
       {
-        test: /\.scss$/,
-        use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
+        test: /\.s(a|c)ss$/,
+        use: [
+          { 
+            loader: MiniCssExtractPlugin.loader,
+            options: {
+              publicPath: '/',
+            },
+          },
+          { 
+            loader: "css-loader",
+            options: { 
+              esModule: true,
+              modules: { 
+                namedExport: true,
+                auto: /\.module\.\w+$/,
+              },
+            },
+          },
+          { loader: "sass-loader" },
+        ],
+      },
+      {
+        test: /\.(woff(2)?|ttf|eot)$/,
+        type: 'asset/resource',
+        generator: {
+          filename: path.join('fonts', '[name][ext]'),
+        },
+      },
+      {
+        test: /\.(svg|png|gif|jpeg|jpg)$/i,
+        type: 'asset/resource',
+        generator: {
+          filename: path.join('images', '[name][ext]'),
+        },
       },
     ],
   },
@@ -33,7 +67,7 @@ module.exports = (_, { mode }) => ({
       template: path.join('src', 'template.html'),
       title: 'Nutrition API',
     }),
-    new MiniCssExtractPlugin(),
+    new MiniCssExtractPlugin({ filename: path.join('css', '[name].css') }),
   ],
   watch: mode === 'development',
   watchOptions: {

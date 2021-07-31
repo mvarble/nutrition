@@ -13,13 +13,18 @@
     "@babel/preset-react": "^7.14.5",
     "babel-loader": "^8.2.2",
     "css-loader": "^6.2.0",
+    "extract-css-chunks-webpack-plugin": "^4.9.0",
+    "file-loader": "^6.2.0",
     "mini-css-extract-plugin": "^2.1.0",
     "sass": "^1.36.0",
     "sass-loader": "^12.1.0",
+    "url-loader": "^4.1.1",
     "webpack": "^5.46.0",
     "webpack-cli": "^4.7.2"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.3",
+    "bulma": "^0.9.3",
     "html-webpack-plugin": "^5.3.2",
     "javascript-barcode-reader": "^0.6.9",
     "lodash": "^4.17.21",
