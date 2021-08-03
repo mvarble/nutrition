@@ -6,16 +6,3 @@ cache:
   npm: true
 services:
   -postgresql
-before_script:
-  - psql -c "DROP DATABASE IF EXISTS ${DATABASE_NAME}_testing;"
-  - psql -c "CREATE DATABASE ${DATABASE_NAME}_testing;"
-  - cargo install diesel_cli --no-default-features --features "postgres"
-  - diesel database --database-url $DATABASE_URL"/"$DATABASE_NAME"_testing" reset
-  - cd assets/ui
-  - nvm install node
-  - npm install
-  - npm run build
-  - cd ../..
-script:
-  - cargo build --verbose --workspace
-  - cargo test --verbose --workspace -- --include-ignored
