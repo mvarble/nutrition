@@ -1,3 +1,0 @@
-DROP TABLE foods CASCADE;
-DROP TABLE servings CASCADE;
-DROP TABLE meals;
