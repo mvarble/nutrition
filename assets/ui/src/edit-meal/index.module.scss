@@ -8,7 +8,7 @@
   display: none;
 }
 
-.fqItem {
+.fq-item {
   padding: 1em;
   & > :first-child {
     display: flex;
@@ -27,7 +27,7 @@
   }
 }
 
-.listInput {
+.list-input {
   position: relative;
   z-index: 3;
   & > input { 

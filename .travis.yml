@@ -5,7 +5,7 @@ cache:
   cargo: true
   npm: true
 services:
-  -postgresql
+  - postgresql
 before_script:
   - psql -c "DROP DATABASE IF EXISTS ${DATABASE_NAME}_testing;"
   - psql -c "CREATE DATABASE ${DATABASE_NAME}_testing;"
