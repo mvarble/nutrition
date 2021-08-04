@@ -133,7 +133,7 @@ fn assert_payload(food: &api::Food) {
         }
         "milk" => {
             assert_eq!(food.nutrition.get("Energy"), Some(&528.0893));
-            assert_eq!(food.nutrition.get("Cholesterol"), Some(&82.84));
+            assert_eq!(food.nutrition.get("Cholesterol"), Some(&82.8375));
             assert!(food
                 .measurements
                 .iter()
