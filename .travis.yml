@@ -5,4 +5,4 @@ cache:
   cargo: true
   npm: true
 services:
-  -postgresql
+  - postgresql

@@ -3,3 +3,6 @@ name = "nutrition"
 version = "0.0.1"
 authors = ["Matthew Varble <mrvarble@gmail.com>"]
 edition = "2018"
+
+[dependencies]
+diesel = { version = "1.4.4", features = ["postgres", "r2d2", "chrono"] }

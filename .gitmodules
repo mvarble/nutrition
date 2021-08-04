@@ -1,0 +1,6 @@
+[submodule "fooddata-central-postgres"]
+	path = fooddata-central-postgres
+	url = git@github.com:mvarble/fooddata-central-postgres.git
+[submodule "database_migrations/fooddata-central-postgres"]
+	path = database_migrations/fooddata-central-postgres
+	url = git@github.com:mvarble/fooddata-central-postgres.git
