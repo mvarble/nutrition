@@ -1,0 +1,9 @@
+[print_schema.filter]
+only_tables = [
+  "food", 
+  "branded_food", 
+  "food_nutrient", 
+  "food_nutrient_derivation", 
+  "nutrient", 
+  "food_nutrient_source",
+ ]
