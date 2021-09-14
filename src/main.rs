@@ -1,6 +1,7 @@
 #[macro_use]
-extern crate diesel;
+extern crate serde;
 
-mod schema;
+mod env;
+mod fdc;
 
 fn main() {}

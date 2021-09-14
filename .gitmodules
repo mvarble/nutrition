@@ -1,3 +1,0 @@
-[submodule "database_migrations/fooddata-central-postgres"]
-	path = database_migrations/fooddata-central-postgres
-	url = https://github.com/mvarble/fooddata-central-postgres.git
