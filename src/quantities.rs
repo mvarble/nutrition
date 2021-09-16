@@ -18,9 +18,9 @@ pub mod parse {
     use nom::branch::alt;
     use nom::bytes::complete::tag;
     use nom::character::complete::{alpha1, char, digit1, multispace0, multispace1};
-    use nom::combinator::map_opt;
+    use nom::combinator::{iterator, map_opt};
     use nom::number::complete::float;
-    use nom::sequence::{delimited, terminated, tuple};
+    use nom::sequence::{delimited, preceded, terminated, tuple};
     use nom::{IResult, Parser};
 
     /// Parse a fraction string like `"1/2"` to the corresponding float.
@@ -162,7 +162,7 @@ pub mod parse {
         }
 
         /// helper function which creates si quantities
-        pub fn si_quantity(input: &str, amount: f32) -> Option<Quantity> {
+        pub fn si_quantity(amount: f32, input: &str) -> Option<Quantity> {
             normalize_unit(input).si_quantity(amount)
         }
     }
@@ -179,66 +179,38 @@ pub mod parse {
     /// iteratively grabbing words until the resulting string matches an SI unit or it can grab no
     /// more. In the latter case, it returns the [`Quantity::Nominal`] variant.
     pub fn quantity<'a>(input: &'a str) -> IResult<&'a str, Quantity> {
-        // the string buffer will build as we grab words. This will ultimately determine the unit
-        // of the SI quantity or the string which is in the nominal variant.
-        let mut string = String::new();
+        // any quantity must be a number and at least one word
+        let number_space = terminated(number, multispace0);
+        let mut required = tuple((number_space, unit_word));
+        match required.parse(input) {
+            // if we cannot match "number word", then we consider the parser failed
+            Err(e) => Err(e),
+            // otherwise, we check if "word" is associated to some si unit
+            Ok((input, (val, word))) => match units::si_quantity(val.clone(), word) {
+                // if so, return the quantity
+                Some(quantity) => Ok((input, quantity)),
+                // if not, continue grabbing words
+                None => {
+                    // a string buffer will hold the words we see
+                    let mut words = String::with_capacity(256);
+                    words.push_str(&word.to_lowercase());
 
-        // create a result with a first pass of a (number, word) parser.
-        let number = delimited(multispace0, number, multispace0);
-        let mut res = tuple((number, unit_word))(input);
-
-        // if the first parse failed, this parser will as well; otherwise, append the first word
-        // to the string
-        match res {
-            Ok((_, (_, word))) => string.push_str(&word.to_lowercase()),
-            Err(e) => return Err(e),
-        }
-
-        // we construct a mutator function which will apply the word parser and append the consumed
-        // word to the string buffer. It will return a boolean of the parser's success.
-        let mutator =
-            |res: &mut IResult<&'a str, (f32, &'a str)>, string: &mut String| match res.as_mut() {
-                Ok((i, _)) => match delimited(multispace0, unit_word, multispace0)(i) {
-                    Ok((i_new, word)) => {
-                        if word == "." {
-                            string.push_str(word);
-                        } else {
-                            string.push_str(" ");
-                            string.push_str(&word.to_lowercase());
-                        }
-                        *i = i_new;
-                        true
-                    }
-                    Err(_) => false,
-                },
-                Err(_) => false, // shouldn't happen in our loop
-            };
-
-        // create a loop for grabbing one word at a time
-        loop {
-            match res {
-                // Check if we can make an SI quantity from the (f32, String) tuple. Otherwise,
-                // continually request words with our mutator
-                Ok((i, (val, _))) => {
-                    // check the SI unit
-                    match units::si_quantity(&string, val.clone()) {
-                        Some(quantity) => return Ok((i, quantity)),
-                        None => {}
-                    }
-
-                    // apply the mutator
-                    let got_another_word = mutator(&mut res, &mut string);
-
-                    // if the mutator did not pass, we say the quantity is nominal
-                    if !got_another_word {
-                        return res.map(|(i, (val, _))| (i, Quantity::Nominal(val, string)));
-                    }
+                    // create an iterator which will repeatedly grab words, checking if the
+                    // sequence of words is associated to an SI unit. If we run out of words before
+                    // seeing an SI unit, we consider it nominal.
+                    let mut iter = iterator(input, preceded(multispace1, unit_word));
+                    let quantity = iter
+                        .scan(&mut words, |words, word| {
+                            words.push_str(" ");
+                            words.push_str(&word.to_lowercase());
+                            Some(units::si_quantity(val.clone(), words))
+                        })
+                        .find_map(|opt_quant| opt_quant)
+                        .unwrap_or(Quantity::Nominal(val, words));
+                    let (input, _) = iter.finish()?;
+                    Ok((input, quantity))
                 }
-                // this is if we immediately failed on the first parse
-                Err(e) => {
-                    return Err(e);
-                }
-            }
+            },
         }
     }
 }
@@ -247,9 +219,8 @@ pub mod parse {
 mod test {
     use super::*;
     use uom::si::{
-        f32::{Mass, Volume},
-        mass::kilogram,
-        volume::{cubic_inch, cup, gallon, milliliter},
+        f32::Volume,
+        volume::{cubic_inch, gallon},
     };
 
     #[test]
@@ -260,37 +231,59 @@ mod test {
         assert_eq!(parse::number("1 1/2."), Ok((".", 1.5)));
     }
 
-    #[test]
-    fn quantity() {
-        assert_eq!(
-            parse::quantity("5.26 milliliters of rice (35g)"),
-            Ok((
-                " of rice (35g)",
-                Quantity::Volume(Volume::new::<milliliter>(5.26))
-            ))
-        );
-        assert_eq!(
-            parse::quantity("5.26 cubic inches (35g)"),
-            Ok(("(35g)", Quantity::Volume(Volume::new::<cubic_inch>(5.26))))
-        );
-        assert_eq!(
-            parse::quantity("83.1512gal"),
-            Ok(("", Quantity::Volume(Volume::new::<gallon>(83.1512))))
-        );
-        assert_eq!(
-            parse::quantity("1/2 cup"),
-            Ok(("", Quantity::Volume(Volume::new::<cup>(0.5))))
-        );
-        assert_eq!(
-            parse::quantity("69.69kg"),
-            Ok(("", Quantity::Mass(Mass::new::<kilogram>(69.69))))
-        );
-        assert_eq!(
-            parse::quantity("1 package (23g Kernels)"),
-            Ok((
-                " (23g Kernels)",
-                Quantity::Nominal(1.0, "package".to_string())
-            ))
-        )
+    mod quantities {
+        use super::*;
+
+        #[test]
+        fn one_word_si_no_space() {
+            assert_eq!(
+                parse::quantity("83.1512gal of oil"),
+                Ok((" of oil", Quantity::Volume(Volume::new::<gallon>(83.1512))))
+            );
+        }
+
+        #[test]
+        fn one_word_si_space() {
+            assert_eq!(
+                parse::quantity("83.1512 gallons of cheese"),
+                Ok((
+                    " of cheese",
+                    Quantity::Volume(Volume::new::<gallon>(83.1512))
+                ))
+            );
+        }
+
+        #[test]
+        fn two_words_si() {
+            assert_eq!(
+                parse::quantity("5.26 cubic inches of rice (35g)"),
+                Ok((
+                    " of rice (35g)",
+                    Quantity::Volume(Volume::new::<cubic_inch>(5.26))
+                ))
+            );
+        }
+
+        #[test]
+        fn one_word_nominal() {
+            assert_eq!(
+                parse::quantity("1 package (23g Kernels)"),
+                Ok((
+                    " (23g Kernels)",
+                    Quantity::Nominal(1.0, "package".to_string())
+                ))
+            )
+        }
+
+        #[test]
+        fn two_words_nominal() {
+            assert_eq!(
+                parse::quantity("1 large bag (3 pounds)"),
+                Ok((
+                    " (3 pounds)",
+                    Quantity::Nominal(1.0, "large bag".to_string()),
+                ))
+            )
+        }
     }
 }
