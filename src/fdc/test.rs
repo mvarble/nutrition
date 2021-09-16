@@ -5,9 +5,7 @@ use crate::{
 
 fn get_service() -> FDCService {
     let environment = env::get().unwrap();
-    FDCService {
-        fdc_key: environment.fdc_key,
-    }
+    FDCService::new(environment.fdc_key)
 }
 
 #[tokio::test]
@@ -92,7 +90,7 @@ async fn v1_foods() {
     match branded {
         FDCMeta::Branded(meta) => {
             assert_eq!(meta.fdc_id, slice[0]);
-            assert_eq!(meta.label_nutrients.fat.value, 13.9995);
+            assert_eq!(meta.label_nutrients.map(|ns| ns.fat.value), Some(13.9995));
         }
         _ => {
             panic!("Should have been a branded food!");

@@ -32,7 +32,7 @@ pub struct BrandedFoodItem {
     pub ingredients: String,
     pub serving_size: f32,
     pub serving_size_unit: String,
-    pub label_nutrients: LabelNutrients,
+    pub label_nutrients: Option<LabelNutrients>,
 }
 
 /// Corresponds to label nutrients on branded foods.

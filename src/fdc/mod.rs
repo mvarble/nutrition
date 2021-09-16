@@ -1,4 +1,5 @@
-//! Interact with the [FoodData Central](https://fdc.nal.usda.gov/index.html) API.
+//! This module allows us to perform HTTP requests to the
+//! [FoodData Central](https://fdc.nal.usda.gov/index.html) API though the [`FDCService`] struct.
 
 pub mod api;
 
